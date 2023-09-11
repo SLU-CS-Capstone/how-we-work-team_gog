@@ -1,4 +1,5 @@
 from graph import Graph
+from fpdf import FPDF
 
 class Maze:
     def __init__(self, size):
@@ -36,27 +37,49 @@ class Maze:
                 if spanning_tree.has_edge(i, j):
                     self.graph.remove_edge(i, j);
                     
-    def print(self):
-        result = ' '+('_ ' * (self.size-1))+'_\n'
-        for i in range(self.size):
-            result+='|'
-            for j in range(self.size):
-                node = self.nodes[i][j]
-                # check the floor (bottom wall)
-                if i < self.size-1 and self.graph.has_edge(node, self.nodes[i+1][j]):
-                    result+='_'
-                elif (i == self.size-1):
-                    result+='_'
-                else:
-                    result+=' '
+    def print(self, output_format='terminal', pdf_filename=None):
+        if output_format == 'terminal':
+            result = ' '+('_ ' * (self.size-1))+'_\n'
+            for i in range(self.size):
+                result+='|'
+                for j in range(self.size):
+                    node = self.nodes[i][j]
+                    # check the floor (bottom wall)
+                    if i < self.size-1 and self.graph.has_edge(node, self.nodes[i+1][j]):
+                        result+='_'
+                    elif (i == self.size-1):
+                        result+='_'
+                    else:
+                        result+=' '
 
-                # check the right wall
-                if j < self.size-1 and self.graph.has_edge(node, self.nodes[i][j+1]):
-                    result+='|'
-                elif i < self.size-1 and j < self.size-1:
-                    result+=' '
-                elif i == self.size-1 and j < self.size-1:
-                    result+='_'
-            result+='|\n'
-        print(result)
+                    # check the right wall
+                    if j < self.size-1 and self.graph.has_edge(node, self.nodes[i][j+1]):
+                        result+='|'
+                    elif i < self.size-1 and j < self.size-1:
+                        result+=' '
+                    elif i == self.size-1 and j < self.size-1:
+                        result+='_'
+                result+='|\n'
+            print(result)
+        elif output_format == 'pdf' and pdf_filename:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            for i in range(self.size):
+                for j in range(self.size):
+                    node = self.nodes[i][j]
+                    if i < self.size-1 and self.graph.has_edge(node, self.nodes[i+1][j]):
+                        pdf.cell(10, 10, "_", border=1)
+                    elif i == self.size-1:
+                        pdf.cell(10, 10, "_", border=1)
+                    else:
+                        pdf.cell(10, 10, " ", border=1)
 
+                    if j < self.size-1 and self.graph.has_edge(node, self.nodes[i][j+1]):
+                        pdf.cell(10, 10, "|", border=1)
+                    elif i < self.size-1 and j < self.size-1:
+                        pdf.cell(10, 10, " ", border=1)
+                    elif i == self.size-1 and j < self.size-1:
+                        pdf.cell(10, 10, "_", border=1)
+                pdf.ln()
+            pdf.output(pdf_filename)
